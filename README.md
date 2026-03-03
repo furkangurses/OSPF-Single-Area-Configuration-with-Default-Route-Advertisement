@@ -162,7 +162,10 @@ show ip ospf database
 
 ```
 
-![Topology Diagram]()
+---
+
+
+![Topology Diagram](https://github.com/furkangurses/OSPF-Single-Area-Configuration-with-Default-Route-Advertisement/blob/main/2.PNG?raw=true)
 
 
 # OSPF Interface-Based Configuration & Advanced Features Lab
