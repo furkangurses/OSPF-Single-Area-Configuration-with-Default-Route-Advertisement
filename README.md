@@ -159,8 +159,200 @@ show ip ospf neighbor
 show ip route
 show ip protocols
 show ip ospf database
+
 ```
+
+![Topology Diagram]()
+
+
+# OSPF Interface-Based Configuration & Advanced Features Lab
 
 ---
 
-```
+## 🎯 Lab Objective
+
+This lab demonstrates advanced OSPF configuration techniques using interface-based activation instead of the traditional `network` command.
+
+Key objectives:
+
+- Configure OSPF directly on interfaces
+- Implement passive interfaces
+- Modify OSPF reference bandwidth
+- Advertise a default route into OSPF
+- Analyze OSPF Hello packets at Layer 3
+
+---
+
+## 🌐 Topology Overview
+
+**Routers:** R1, R2, R3, R4  
+**Area:** OSPF Area 0  
+**Protocol:** OSPFv2 (Process ID 1)
+
+- R1 connected to ISP (203.0.113.2)
+- Internal links use FastEthernet and GigabitEthernet
+- Loopback0 configured on each router
+- R4 connected to R2 and R3
+
+All routers participate in Area 0.
+
+---
+
+## ⚙️ Configuration Steps
+
+### 1️⃣ Enable OSPF Directly on Interfaces
+
+Instead of using the `network` command, OSPF was enabled explicitly per interface using:
+
+- `interface range`
+- `ip ospf 1 area 0`
+
+Loopback interfaces were included.
+
+---
+
+### 2️⃣ Configure Passive Interfaces
+
+Loopback interfaces were configured as passive:
+
+- Prevents Hello packets
+- Advertises connected network
+- Improves security and efficiency
+
+On R4, `passive-interface default` was tested and selectively removed from active interfaces.
+
+---
+
+### 3️⃣ Adjust Reference Bandwidth
+
+Configured:
+
+- auto-cost reference-bandwidth 10000
+
+
+Reason:
+
+OSPF Cost = Reference Bandwidth / Interface Bandwidth
+
+With 10000 Mbps reference:
+
+- FastEthernet (100 Mbps) → Cost 100
+- GigabitEthernet (1000 Mbps) → Cost 10
+
+Ensures proper path selection in modern networks.
+
+---
+
+### 4️⃣ Advertise Default Route
+
+On R1:
+
+- Enabled OSPF default advertisement
+- Configured static default route toward ISP
+
+Observed external OSPF Type 2 (E2) route behavior.
+
+---
+
+### 5️⃣ Analyze OSPF Hello Packet
+
+Simulation mode was used to inspect:
+
+- Multicast destination: 224.0.0.5
+- Protocol number: 89 (0x59 hex)
+- OSPF Version: 2
+- Message Type: 1 (Hello)
+- Default timers: Hello 10s / Dead 40s
+- Area ID: 0.0.0.0
+
+---
+
+## 📝 Commands Used
+
+- enable
+- conf t
+
+- interface range g0/0, f1/0, l0
+- ip ospf 1 area 0
+
+- router ospf 1
+- passive-interface l0
+
+- router ospf 1
+- passive-interface default
+- no passive-interface f1/0
+- no passive-interface f2/0
+
+- auto-cost reference-bandwidth 10000
+
+- default-information originate
+
+- ip route 0.0.0.0 0.0.0.0 203.0.113.2
+
+- show ip protocols
+- show ip ospf neighbor
+- show ip ospf interface
+- show ip route
+
+
+---
+
+## 🧠 Technical Explanation
+
+This lab teaches:
+
+- Interface-based OSPF activation for precise control
+- How passive interfaces prevent neighbor formation while advertising routes
+- Importance of reference bandwidth consistency across routers
+- Behavior of OSPF External Type 2 (E2) routes
+- OSPF packet structure at Layer 3
+
+It reinforces both configuration skills and protocol-level understanding.
+
+---
+
+## 🌍 Real-World Use Case
+
+- Enterprise edge router advertising internet default route
+- Optimizing OSPF cost in mixed-speed environments
+- Securing routing by limiting unnecessary adjacencies
+- Troubleshooting neighbor state changes
+- Understanding external route behavior in production networks
+
+---
+
+## 🛠️ Skills Gained
+
+- Advanced OSPF configuration
+- Interface-level routing control
+- OSPF metric calculation
+- External route analysis (E2)
+- Neighbor state troubleshooting
+- Packet-level protocol inspection
+- Routing table validation
+
+---
+
+## ⚡ Possible Improvements
+
+- Replicate lab in GNS3 or real hardware for accurate ECMP behavior
+- Implement OSPF authentication
+- Introduce multi-area OSPF design
+- Compare E1 vs E2 external routes
+- Add route summarization
+
+---
+
+## 🧩 Troubleshooting Notes
+
+- Passive interfaces immediately drop neighbors
+- All routers must share identical reference bandwidth
+- Default route requires both static route and `default-information originate`
+- Packet Tracer may not install equal-cost external routes correctly
+- OSPF Hello multicast address: 224.0.0.5
+- OSPF protocol number: 89
+
+---
+
+
+
