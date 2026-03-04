@@ -357,5 +357,244 @@ It reinforces both configuration skills and protocol-level understanding.
 
 ---
 
+![Topology Diagram](https://github.com/furkangurses/OSPF-Single-Area-Configuration-with-Default-Route-Advertisement/blob/main/3.PNG?raw=true)
+
+
+# OSPF Configuration and Troubleshooting Lab
+
+---
+
+## 🎯 Lab Objective
+
+This lab focuses on configuring and troubleshooting **OSPF (Open Shortest Path First)** in a multi-router topology.
+
+Objectives:
+
+- Configure a serial link between R1 and R2
+- Enable OSPF on required interfaces
+- Identify and fix OSPF adjacency issues
+- Resolve network type mismatches
+- Fix OSPF timer inconsistencies
+- Configure and advertise a default route
+- Verify LSDB consistency
+
+---
+
+## 🌐 Topology Overview
+
+- 5 Routers (R1–R5)
+- Serial connection between **R1–R2**
+- Ethernet multi-access networks
+- OSPF Area 0 used throughout the topology
+- R5 connected to an external network (Internet simulation: `8.8.8.8`)
+- PCs used for end-to-end connectivity testing
+
+Key Networks:
+
+- 192.168.12.0/30 (R1–R2 Serial)
+- 192.168.34.0/30 (R3–R4)
+- 192.168.245.0/29 (R2–R4–R5)
+- 10.0.2.0/24 (Internal LAN)
+- 0.0.0.0/0 (Default route via R5)
+
+---
+
+## ⚙️ Configuration Steps
+
+### 1️⃣ Configure Serial Link (R1–R2)
+
+- Assign IP addresses
+- Configure clock rate on DCE side
+- Enable interfaces
+
+R1:
+- `192.168.12.1/30`
+- Clock rate 128000 (DCE)
+
+R2:
+- `192.168.12.2/30`
+
+---
+
+### 2️⃣ Enable OSPF on Interfaces
+
+- OSPF Process ID: 1
+- Area: 0
+- Enabled directly on interfaces using:
+  
+```
+ip ospf 1 area 0
+```
+
+---
+
+### 3️⃣ Fix Missing Route to 10.0.2.0/24
+
+Problem:
+- R4 had OSPF adjacency with R3 but did not learn route.
+
+Root Cause:
+- Network type mismatch:
+  - R3 → point-to-point
+  - R4 → broadcast
+
+Solution:
+- Remove point-to-point configuration from R3
+
+---
+
+### 4️⃣ Fix OSPF Neighbor Issue with R5
+
+Problem:
+- R2 and R4 were not forming adjacency with R5.
+
+Root Cause:
+- OSPF timer mismatch
+  - R5 Hello: 5
+  - R5 Dead: 20
+  - Others: 10/40 (default)
+
+Solution:
+- Reset R5 timers to default
+
+---
+
+### 5️⃣ Fix Default Route Advertisement
+
+Problem:
+- PCs could not ping 8.8.8.8
+
+Root Cause:
+- R5 configured `default-information originate`
+- But no default route existed in routing table
+
+Solution:
+- Configure static default route:
+```
+ip route 0.0.0.0 0.0.0.0 203.0.113.2
+```
+
+---
+
+## 📝 Commands Used
+
+```bash
+enable
+configure terminal
+interface s0/0/0
+ip address 192.168.12.1 255.255.255.252
+clock rate 128000
+no shutdown
+
+ip address 192.168.12.2 255.255.255.252
+no shutdown
+
+ip ospf 1 area 0
+no ip ospf network point-to-point
+
+no ip ospf hello-interval
+no ip ospf dead-interval
+
+ip route 0.0.0.0 0.0.0.0 203.0.113.2
+
+show ip interface brief
+show controllers s0/0/0
+show ip protocols
+show ip ospf interface
+show ip ospf neighbor
+show ip route
+show ip ospf database
+show running-config | section ospf
+
+ping 10.0.2.1
+ping 8.8.8.8
+```
+
+---
+
+## 🧠 Technical Explanation
+
+This lab demonstrates core OSPF operational concepts:
+
+- OSPF adjacency formation requirements
+- Network type impact (Broadcast vs Point-to-Point)
+- Hello/Dead timer consistency
+- DR/BDR election behavior
+- LSDB synchronization
+- LSA Types:
+  - Type 1 → Router LSA
+  - Type 2 → Network LSA
+  - Type 5 → AS External LSA
+- Default route injection using `default-information originate`
+
+It reinforces that **OSPF requires exact parameter matching** to form stable neighbor relationships.
+
+---
+
+## 🌍 Real-World Use Case
+
+In enterprise networks:
+
+- Timer mismatches commonly break OSPF adjacency
+- Network type misconfiguration causes partial routing failures
+- Default route advertisement is critical for Internet access
+- Engineers must validate LSDB consistency across routers
+
+This lab simulates real-world troubleshooting scenarios faced by:
+
+- Network Engineers
+- NOC Engineers
+- CCNA-level Administrators
+
+---
+
+## 🛠️ Skills Gained
+
+- OSPF interface-based configuration
+- Serial DCE/DTE understanding
+- Troubleshooting adjacency issues
+- Identifying network type mismatches
+- Diagnosing timer inconsistencies
+- Default route configuration and redistribution
+- LSDB analysis
+- End-to-end connectivity validation
+
+---
+
+## ⚡ Possible Improvements
+
+- Convert interface-based OSPF config to network statements for consistency
+- Implement passive interfaces where appropriate
+- Add authentication (OSPF MD5)
+- Implement multi-area OSPF design
+- Add route summarization
+- Simulate link failure and convergence testing
+
+---
+
+## 🧩 Troubleshooting Notes
+
+Common OSPF adjacency failure causes:
+
+- Area mismatch
+- Subnet mismatch
+- Hello/Dead timer mismatch
+- Network type mismatch
+- Missing `no shutdown`
+- Missing default route for redistribution
+
+Verification strategy:
+
+1. Check interfaces
+2. Verify OSPF neighbors
+3. Confirm routing table
+4. Inspect LSDB
+5. Test with ping/traceroute
+
+---
+
+**Lab Level:** CCNA  
+**Focus Area:** OSPF Configuration & Troubleshooting  
+**Environment:** Cisco IOS (Simulated Lab)
 
 
